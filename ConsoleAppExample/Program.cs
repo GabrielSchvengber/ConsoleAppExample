@@ -1,4 +1,4 @@
-﻿using System;
+﻿using RabbitMQ.Client;
 
 namespace ConsoleAppExample
 {
@@ -10,18 +10,25 @@ namespace ConsoleAppExample
 
         private static void Main(string[] args)
         {
-            var connectionFactory = new RabbitMQ.Client.ConnectionFactory(){
+            var connectionFactory = new ConnectionFactory(){
                 HostName = _HostName,
                 UserName = _UserName,
                 Password = _Password
             };
-
+            
             var connection = connectionFactory.CreateConnection();
             var channel = connection.CreateModel();
-            channel.QueueDeclare(queue: "hello", durable: false, exclusive: false, autoDelete: false, arguments: null);
-            //Many Variations up here on channel,
-            //but the main thing is to create a channel and then use it to send and receive messages.
+           
+            channel.QueueDeclare(queue: "MyQueue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+            Console.WriteLine("Queue created");
 
+            channel.ExchangeDeclare(exchange: "MyExchange", type: ExchangeType.Topic);
+            Console.WriteLine("Exchange created");
+
+            channel.QueueBind(queue: "MyQueue", exchange: "MyExchange", routingKey: "cars");
+            Console.WriteLine("Queue bound to exchange with routing key 'cars'");
+
+            Console.ReadLine();
         }
     }
 }
