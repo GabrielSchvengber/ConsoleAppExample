@@ -8,26 +8,56 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
+        public const string _QueueName = "Module1.Sample3";
+        public const string _ExchangeName = "MyExchange";
+
         private static void Main(string[] args)
         {
-            var connectionFactory = new ConnectionFactory(){
+            Console.WriteLine("Starting RabbitMQ Message Sender");
+
+            var connectionFactory = new ConnectionFactory()
+            {
                 HostName = _HostName,
                 UserName = _UserName,
                 Password = _Password
             };
-            
+
             var connection = connectionFactory.CreateConnection();
             var channel = connection.CreateModel();
-           
-            channel.QueueDeclare(queue: "MyQueue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-            Console.WriteLine("Queue created");
 
-            channel.ExchangeDeclare(exchange: "MyExchange", type: ExchangeType.Topic);
-            Console.WriteLine("Exchange created");
+            channel.ExchangeDeclare(
+                exchange: _ExchangeName,
+                type: ExchangeType.Topic,
+                durable: true);
 
-            channel.QueueBind(queue: "MyQueue", exchange: "MyExchange", routingKey: "cars");
-            Console.WriteLine("Queue bound to exchange with routing key 'cars'");
+            channel.QueueDeclare(
+                queue: _QueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
 
+            channel.QueueBind(
+                queue: _QueueName,
+                exchange: _ExchangeName,
+                routingKey: _QueueName);
+
+
+            var properties = channel.CreateBasicProperties();
+            // Stored in the disk, so that it will not be lost even if RabbitMQ server is restarted
+            properties.Persistent = true;
+
+            // messageBuffer.Length == 18
+            // Each position in the array holds 1 byte, representing 1 piece of the text
+            byte[] messageBuffer = System.Text.Encoding.UTF8.GetBytes("This is my Message");
+
+            channel.BasicPublish(
+                exchange: _ExchangeName,
+                routingKey: _QueueName,
+                basicProperties: properties,
+                body: messageBuffer);
+
+            Console.WriteLine("Message Sent to Queue: " + _QueueName);
             Console.ReadLine();
         }
     }
