@@ -32,6 +32,7 @@ namespace ConsoleAppExample
 
             channel.QueueDeclare(
                 queue: _QueueName,
+                //Durable: true, // This will keep the queue even if RabbitMQ restarts.
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
@@ -44,7 +45,7 @@ namespace ConsoleAppExample
 
 
             var properties = channel.CreateBasicProperties();
-            // Stored in the disk, so that it will not be lost even if RabbitMQ server is restarted
+            // Persistent = true, // Will keep the message in the queue even if RabbitMQ restarts.
             properties.Persistent = true;
 
             // messageBuffer.Length == 18
