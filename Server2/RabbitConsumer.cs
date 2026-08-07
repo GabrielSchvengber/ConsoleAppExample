@@ -3,7 +3,7 @@ using RabbitMQ.Client.Events;
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace Server
+namespace Server2
 {
     /// <summary>
     /// Class to encapsulate recieving messages from RabbitMQ

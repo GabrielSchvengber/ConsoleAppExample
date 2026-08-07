@@ -8,7 +8,7 @@ namespace Client
         private const string _HostName = "localhost";
         private const string _UserName = "guest";
         private const string _Password = "guest";
-        private const string _QueueName = "Module2.Sample1";
+        private const string _QueueName = "Module2.Sample2";
         private const string _ExchangeName = "";
         private const bool _IsDurable = true;
 
