@@ -8,11 +8,10 @@ namespace Client
         private const string _HostName = "localhost";
         private const string _UserName = "guest";
         private const string _Password = "guest";
-        private const string _QueueName = "Module2.Sample2";
-        private const string _ExchangeName = "";
+        // Now setting just the exchange name, since we are using a fanout exchange, and not a queue.
+        private const string _ExchangeName = "Module2.Sample3.Exchange";
         private const bool _IsDurable = true;
 
-        //The two below settings are just default values.
         private const string _VirtualHost = "";
         private int _Port = 0;
 
@@ -35,7 +34,6 @@ namespace Client
             Console.WriteLine("Host: {0}", _HostName);
             Console.WriteLine("Username: {0}", _UserName);
             Console.WriteLine("Password: {0}", _Password);
-            Console.WriteLine("QueueName: {0}", _QueueName);
             Console.WriteLine("ExchangeName: {0}", _ExchangeName);
             Console.WriteLine("VirtualHost: {0}", _VirtualHost);
             Console.WriteLine("Port: {0}", _Port);
@@ -67,7 +65,8 @@ namespace Client
 
             byte[] messageBuffer = Encoding.Default.GetBytes(message);
 
-            _model.BasicPublish(_ExchangeName, _QueueName, properties, messageBuffer);
+            // Publish the message to "" Queue, because we are using a fanout exchange, the routing key is not needed.
+            _model.BasicPublish(_ExchangeName, "", properties, messageBuffer);
         }
 
         public void Dispose()

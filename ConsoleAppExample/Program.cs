@@ -8,14 +8,16 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
-        public const string _QueueName = "Module1.Sample3";
-        public const string _ExchangeName = "MyExchange";
+        public const string _FisrtQueueName = "Module2.Sample3.Queue1";
+        public const string _SecondQueueName = "Module2.Sample3.Queue2";
+
+        public const string _ExchangeName = "Module2.Sample3.Exchange";
 
         private static void Main(string[] args)
         {
-            Console.WriteLine("Starting RabbitMQ Message Sender");
+            Console.WriteLine("Setting up RabbitMQ Connection Factory");
 
-            var connectionFactory = new ConnectionFactory()
+            var connectionFactory = new ConnectionFactory
             {
                 HostName = _HostName,
                 UserName = _UserName,
@@ -25,41 +27,50 @@ namespace ConsoleAppExample
             var connection = connectionFactory.CreateConnection();
             var channel = connection.CreateModel();
 
+            //A Fanout exchange sends the SAME message to all related queues.
+            string exchangeType = ExchangeType.Fanout;
+
             channel.ExchangeDeclare(
                 exchange: _ExchangeName,
-                type: ExchangeType.Topic,
-                durable: true);
+                type: exchangeType,
+                durable: true
+            );
+
+            Console.WriteLine("Creating Server 1 Queue");
 
             channel.QueueDeclare(
-                queue: _QueueName,
-                //Durable: true, // This will keep the queue even if RabbitMQ restarts.
+                queue: _FisrtQueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
-                arguments: null);
+                arguments: null
+            );
 
             channel.QueueBind(
-                queue: _QueueName,
+                queue: _FisrtQueueName,
                 exchange: _ExchangeName,
-                routingKey: _QueueName);
+                // Null routing key for fanout exchange, since it sends the same message to all queues.
+                routingKey: ""
+            );
 
+            Console.WriteLine("Creating Server 2 Queue");
 
-            var properties = channel.CreateBasicProperties();
-            // Persistent = true, // Will keep the message in the queue even if RabbitMQ restarts.
-            properties.Persistent = true;
+            channel.QueueDeclare(
+                queue: _SecondQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
 
-            // messageBuffer.Length == 18
-            // Each position in the array holds 1 byte, representing 1 piece of the text
-            byte[] messageBuffer = System.Text.Encoding.UTF8.GetBytes("This is my Message");
-
-            channel.BasicPublish(
+            channel.QueueBind(
+                queue: _SecondQueueName,
                 exchange: _ExchangeName,
-                routingKey: _QueueName,
-                basicProperties: properties,
-                body: messageBuffer);
+                // Null routing key for fanout exchange, since it sends the same message to all queues.
+                routingKey: ""
+            );
 
-            Console.WriteLine("Message Sent to Queue: " + _QueueName);
-            Console.ReadLine();
+            Console.WriteLine("Setup complete");
         }
     }
 }

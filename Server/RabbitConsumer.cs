@@ -1,6 +1,5 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Collections.Concurrent;
 using System.Text;
 
 namespace Server
@@ -14,10 +13,9 @@ namespace Server
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample2";
-        public const string _ExchangeName = "MyExchange";
+        private const string _QueueName = "Module2.Sample3.Queue1";
         private const bool _IsDurable = true;
-
+        
         private const string _VirtualHost = "";
         private int _Port = 0;
 
@@ -28,7 +26,7 @@ namespace Server
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _model;
-
+        private EventingBasicConsumer _consumer;
 
         /// <summary>
         /// Ctor with a key to lookup the configuration
@@ -52,6 +50,7 @@ namespace Server
             _model = _connection.CreateModel();
             _model.BasicQos(0, 1, false);
         }
+
         /// <summary>
         /// Displays the rabbit settings
         /// </summary>
@@ -61,38 +60,37 @@ namespace Server
             Console.WriteLine("Username: {0}", _UserName);
             Console.WriteLine("Password: {0}", _Password);
             Console.WriteLine("QueueName: {0}", _QueueName);
-            Console.WriteLine("ExchangeName: {0}", _ExchangeName);
             Console.WriteLine("VirtualHost: {0}", _VirtualHost);
             Console.WriteLine("Port: {0}", _Port);
             Console.WriteLine("Is Durable: {0}", _IsDurable);
         }
+
         /// <summary>
         /// Starts receiving a message from a queue
         /// </summary>
         public void Start()
         {
-            var consumer = new EventingBasicConsumer(_model);
-            var filaMensagens = new BlockingCollection<BasicDeliverEventArgs>();
+            Enabled = true;
 
-            consumer.Received += (model, ea) =>
-            {
-                filaMensagens.Add(ea);
-            };
+            _consumer = new EventingBasicConsumer(_model);
+            _consumer.Received += OnMessageReceived;
 
-            _model.BasicConsume(_QueueName, autoAck: false, consumer: consumer);
+            _model.BasicConsume(_QueueName, autoAck: false, consumer: _consumer);
+        }
 
-            while (Enabled)
-            {
-                // Get next message (block until a message arrives, similar to Dequeue)
-                var deliveryArgs = filaMensagens.Take();
+        private void OnMessageReceived(object? sender, BasicDeliverEventArgs deliveryArgs)
+        {
+            if (!Enabled)
+                return;
 
-                //Serialize message
-                var message = Encoding.UTF8.GetString(deliveryArgs.Body.Span);
+            //Deserialize message
+            var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
 
-                Console.WriteLine("Message Recieved - {0}", message);
+            //Handle Message
+            Console.WriteLine("Message Recieved - {0}", message);
 
-                _model.BasicAck(deliveryArgs.DeliveryTag, false);
-            }
+            //Acknowledge message is processed
+            _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
         }
 
         /// <summary>
@@ -100,6 +98,8 @@ namespace Server
         /// </summary>
         public void Dispose()
         {
+            if (_consumer != null)
+                _consumer.Received -= OnMessageReceived;
             if (_model != null)
                 _model.Dispose();
             if (_connection != null)
