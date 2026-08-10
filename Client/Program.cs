@@ -15,14 +15,18 @@
             while (true)
             {
                 var key = Console.ReadKey();
+
                 if (key.Key == ConsoleKey.Q)
                     break;
 
                 if (key.Key == ConsoleKey.Enter)
                 {
                     var message = string.Format("Message: {0}", messageCount);
-                    Console.WriteLine(string.Format("Sending - {0}", message));
-                    sender.Send(message);
+                    Console.WriteLine("Sending - {0}", message);
+
+                    var response = sender.Send(message, new TimeSpan(0, 0, 3, 0));
+
+                    Console.WriteLine("Response - {0}", response);
                     messageCount++;
                 }
             }

@@ -8,14 +8,19 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
-        public const string _FisrtQueueName = "Module2.Sample3.Queue1";
-        public const string _SecondQueueName = "Module2.Sample3.Queue2";
+        public const string _QueueName = "Module2.Sample7.Queue";
 
-        public const string _ExchangeName = "Module2.Sample3.Exchange";
-
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
+            string rabbitDllPath = args.Length > 0 ? args[0] : "not specified";
+
+            Console.WriteLine("Rabbit DLL Path: ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(rabbitDllPath);
+            Console.ResetColor();
+
             Console.WriteLine("Setting up RabbitMQ Connection Factory");
+            Console.ForegroundColor = ConsoleColor.Green;
 
             var connectionFactory = new ConnectionFactory
             {
@@ -25,51 +30,20 @@ namespace ConsoleAppExample
             };
 
             var connection = connectionFactory.CreateConnection();
+
+            Console.WriteLine("Setting up RabbitMQ Channel");
             var channel = connection.CreateModel();
 
-            //A Fanout exchange sends the SAME message to all related queues.
-            string exchangeType = ExchangeType.Fanout;
-
-            channel.ExchangeDeclare(
-                exchange: _ExchangeName,
-                type: exchangeType,
-                durable: true
-            );
-
-            Console.WriteLine("Creating Server 1 Queue");
-
+            Console.WriteLine("Creating RPC Queue");
             channel.QueueDeclare(
-                queue: _FisrtQueueName,
-                durable: true,
-                exclusive: false,
+                queue: _QueueName,                
+                durable: false,
+                exclusive: true,
+
                 autoDelete: false,
-                arguments: null
-            );
+                arguments: null);
 
-            channel.QueueBind(
-                queue: _FisrtQueueName,
-                exchange: _ExchangeName,
-                // Null routing key for fanout exchange, since it sends the same message to all queues.
-                routingKey: ""
-            );
-
-            Console.WriteLine("Creating Server 2 Queue");
-
-            channel.QueueDeclare(
-                queue: _SecondQueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
-
-            channel.QueueBind(
-                queue: _SecondQueueName,
-                exchange: _ExchangeName,
-                // Null routing key for fanout exchange, since it sends the same message to all queues.
-                routingKey: ""
-            );
-
+            Console.ResetColor();
             Console.WriteLine("Setup complete");
         }
     }
