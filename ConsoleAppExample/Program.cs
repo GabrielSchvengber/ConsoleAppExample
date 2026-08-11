@@ -8,44 +8,53 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
-        public const string _QueueName = "Module2.Sample7.Queue";
+        public const string _FirstQueueName = "Module2.Sample4.Queue1";
+        public const string _SecondQueueName = "Module2.Sample4.Queue2";
+        public const string _ExchangeName = "Module2.Sample4.Exchange";
 
         static void Main(string[] args)
         {
-            string rabbitDllPath = args.Length > 0 ? args[0] : "not specified";
-
-            Console.WriteLine("Rabbit DLL Path: ");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(rabbitDllPath);
-            Console.ResetColor();
-
             Console.WriteLine("Setting up RabbitMQ Connection Factory");
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            var connectionFactory = new ConnectionFactory
+            var factory = new ConnectionFactory
             {
                 HostName = _HostName,
                 UserName = _UserName,
                 Password = _Password
             };
 
-            var connection = connectionFactory.CreateConnection();
+            using var connection = factory.CreateConnection();
 
             Console.WriteLine("Setting up RabbitMQ Channel");
-            var channel = connection.CreateModel();
+            using var channel = connection.CreateModel();
 
-            Console.WriteLine("Creating RPC Queue");
+            Console.WriteLine("Creating Exchange");
+
+            channel.ExchangeDeclare(
+                exchange: _ExchangeName,
+                // Direct, is used to route messages with a specific routing key.
+                type: ExchangeType.Direct,
+                durable: true);
+
+            Console.WriteLine("Creating Server 1 Queue");
             channel.QueueDeclare(
-                queue: _QueueName,                
-                durable: false,
-                exclusive: true,
-
+                queue: _FirstQueueName,
+                durable: true,
+                exclusive: false,
                 autoDelete: false,
                 arguments: null);
+            channel.QueueBind(_FirstQueueName, _ExchangeName, "1");
 
-            Console.ResetColor();
+            Console.WriteLine("Creating Server 2 Queue");
+            channel.QueueDeclare(
+                queue: _SecondQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+            channel.QueueBind(_SecondQueueName, _ExchangeName, "2");
+
             Console.WriteLine("Setup complete");
-        }
+        }    
     }
 }
 

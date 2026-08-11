@@ -13,7 +13,7 @@ namespace Server
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample7.Queue";
+        private const string _QueueName = "Module2.Sample4.Queue1";
         private const bool _IsDurable = true;
         
         private const string _VirtualHost = "";
@@ -26,7 +26,7 @@ namespace Server
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _model;
-        private EventingBasicConsumer _consumer;
+        private EventingBasicConsumer _consumer;       
 
         /// <summary>
         /// Ctor with a key to lookup the configuration
@@ -82,18 +82,10 @@ namespace Server
         {
             if (!Enabled)
                 return;
-            
+
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
             Console.WriteLine("Message Recieved - {0}", message);
 
-            var response = string.Format("Processed message - {0} : Response is good", message);
-            
-            var replyProperties = _model.CreateBasicProperties();
-            replyProperties.CorrelationId = deliveryArgs.BasicProperties.CorrelationId;
-
-            byte[] messageBuffer = Encoding.Default.GetBytes(response);
-            _model.BasicPublish("", deliveryArgs.BasicProperties.ReplyTo, replyProperties, messageBuffer);
-           
             _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
         }
 

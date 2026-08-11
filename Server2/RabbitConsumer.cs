@@ -13,7 +13,7 @@ namespace Server2
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample3.Queue2";
+        private const string _QueueName = "Module2.Sample4.Queue2";
         private const bool _IsDurable = true;
 
         private const string _VirtualHost = "";
@@ -83,13 +83,9 @@ namespace Server2
             if (!Enabled)
                 return;
 
-            //Deserialize message
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
-
-            //Handle Message
             Console.WriteLine("Message Recieved - {0}", message);
 
-            //Acknowledge message is processed
             _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
         }
 

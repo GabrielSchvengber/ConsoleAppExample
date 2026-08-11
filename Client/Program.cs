@@ -1,4 +1,6 @@
-﻿namespace Client
+﻿using System.Globalization;
+
+namespace Client
 {
     class Program
     {
@@ -9,6 +11,7 @@
             Console.WriteLine();
 
             var messageCount = 0;
+            string routingKey;
             var sender = new RabbitSender();
 
             Console.WriteLine("Press enter key to send a message");
@@ -21,12 +24,13 @@
 
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    var message = string.Format("Message: {0}", messageCount);
+                    //Used to generate a random routing key so server 1,2 or no one will get the message
+                    routingKey = new Random().Next(0, 4).ToString(CultureInfo.InvariantCulture);
+
+                    var message = string.Format("Message: {0} - Routing Key: {1}", messageCount, routingKey);
                     Console.WriteLine("Sending - {0}", message);
 
-                    var response = sender.Send(message, new TimeSpan(0, 0, 3, 0));
-
-                    Console.WriteLine("Response - {0}", response);
+                    sender.Send(message, routingKey);
                     messageCount++;
                 }
             }

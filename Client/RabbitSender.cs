@@ -1,6 +1,4 @@
 ﻿using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Collections.Concurrent;
 using System.Text;
 
 namespace Client
@@ -10,7 +8,7 @@ namespace Client
         private const string _HostName = "localhost";
         private const string _UserName = "guest";
         private const string _Password = "guest";
-        private const string _QueueName = "Module2.Sample7.Queue";
+        private const string _ExchangeName = "Module2.Sample4.Exchange";
         private const bool _IsDurable = true;
 
         private const string _VirtualHost = "";
@@ -19,13 +17,7 @@ namespace Client
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _model;
-        private bool _disposed;
-
-        private string _responseQueue;
-        private EventingBasicConsumer _consumer;
-
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> _pendingRequests =
-            new ConcurrentDictionary<string, TaskCompletionSource<string>>();
+        private bool _disposed;        
 
         /// <summary>
         /// Ctor
@@ -41,7 +33,7 @@ namespace Client
             Console.WriteLine("Host: {0}", _HostName);
             Console.WriteLine("Username: {0}", _UserName);
             Console.WriteLine("Password: {0}", _Password);
-            Console.WriteLine("QueueName: {0}", _QueueName);
+            Console.WriteLine("ExchangeName: {0}", _ExchangeName);
             Console.WriteLine("VirtualHost: {0}", _VirtualHost);
             Console.WriteLine("Port: {0}", _Port);
             Console.WriteLine("Is Durable: {0}", _IsDurable);
@@ -63,54 +55,16 @@ namespace Client
 
             _connection = _connectionFactory.CreateConnection();
             _model = _connection.CreateModel();
-
-            // Create dynamic response queue
-            _responseQueue = _model.QueueDeclare().QueueName;
-
-            _consumer = new EventingBasicConsumer(_model);
-            _consumer.Received += OnMessageReceived;
-
-            _model.BasicConsume(_responseQueue, true, _consumer);
         }
 
-        private void OnMessageReceived(object? sender, BasicDeliverEventArgs e)
+        public void Send(string message, string routingKey)
         {
-            var correlationId = e.BasicProperties?.CorrelationId;
-            if (correlationId == null)
-                return;
+            var properties = _model.CreateBasicProperties();
+            properties.Persistent = true;
 
-            if (_pendingRequests.TryRemove(correlationId, out var tcs))
-            {
-                var response = Encoding.Default.GetString(e.Body.Span);
-                tcs.TrySetResult(response);
-            }
-        }
+            byte[] messageBuffer = Encoding.Default.GetBytes(message);
 
-        public string Send(string message, TimeSpan timeout)
-        {
-            var correlationToken = Guid.NewGuid().ToString();
-
-            var tcs = new TaskCompletionSource<string>();
-            _pendingRequests[correlationToken] = tcs;
-
-            try
-            {
-                var properties = _model.CreateBasicProperties();
-                properties.ReplyTo = _responseQueue;
-                properties.CorrelationId = correlationToken;
-
-                byte[] messageBuffer = Encoding.Default.GetBytes(message);
-                _model.BasicPublish("", _QueueName, properties, messageBuffer);
-
-                if (tcs.Task.Wait(timeout))
-                    return tcs.Task.Result;
-
-                throw new TimeoutException("The response was not returned before the timeout");
-            }
-            finally
-            {
-                _pendingRequests.TryRemove(correlationToken, out _);
-            }
+            _model.BasicPublish(_ExchangeName, routingKey, properties, messageBuffer);
         }
 
         public void Dispose()
@@ -126,15 +80,6 @@ namespace Client
 
             if (disposing)
             {
-                if (_consumer != null)
-                    _consumer.Received -= OnMessageReceived;
-                
-                foreach (var pending in _pendingRequests)
-                {
-                    pending.Value.TrySetCanceled();
-                }
-                _pendingRequests.Clear();
-
                 try
                 {
                     if (_model?.IsOpen == true)
