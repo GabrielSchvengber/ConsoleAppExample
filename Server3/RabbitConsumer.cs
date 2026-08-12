@@ -2,7 +2,7 @@
 using RabbitMQ.Client.Events;
 using System.Text;
 
-namespace Server2
+namespace Server3
 {
     /// <summary>
     /// Class to encapsulate recieving messages from RabbitMQ
@@ -13,7 +13,7 @@ namespace Server2
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample5.Queue2";
+        private const string _QueueName = "Module2.Sample5.Queue3";
         private const bool _IsDurable = true;
 
         private const string _VirtualHost = "";

@@ -1,5 +1,4 @@
 ﻿using RabbitMQ.Client;
-
 namespace ConsoleAppExample
 {
     internal class Program
@@ -8,13 +7,16 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
-        public const string _FirstQueueName = "Module2.Sample4.Queue1";
-        public const string _SecondQueueName = "Module2.Sample4.Queue2";
-        public const string _ExchangeName = "Module2.Sample4.Exchange";
+        public const string _FirstQueueName = "Module2.Sample5.Queue1";
+        public const string _SecondQueueName = "Module2.Sample5.Queue2";
+        public const string _ThirdQueueName = "Module2.Sample5.Queue3";
+
+        public const string _ExchangeName = "Module2.Sample5.Exchange";
 
         static void Main(string[] args)
         {
             Console.WriteLine("Setting up RabbitMQ Connection Factory");
+
             var factory = new ConnectionFactory
             {
                 HostName = _HostName,
@@ -22,17 +24,16 @@ namespace ConsoleAppExample
                 Password = _Password
             };
 
-            using var connection = factory.CreateConnection();
+            var connection = factory.CreateConnection();
 
             Console.WriteLine("Setting up RabbitMQ Channel");
-            using var channel = connection.CreateModel();
+            var channel = connection.CreateModel();
 
             Console.WriteLine("Creating Exchange");
-
             channel.ExchangeDeclare(
                 exchange: _ExchangeName,
-                // Direct, is used to route messages with a specific routing key.
-                type: ExchangeType.Direct,
+                // Topic, is used to route messages based on pattern matching with wildcards (* and #).
+                type: ExchangeType.Topic,
                 durable: true);
 
             Console.WriteLine("Creating Server 1 Queue");
@@ -42,7 +43,7 @@ namespace ConsoleAppExample
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
-            channel.QueueBind(_FirstQueueName, _ExchangeName, "1");
+            channel.QueueBind(_FirstQueueName, _ExchangeName, "*.high.*");
 
             Console.WriteLine("Creating Server 2 Queue");
             channel.QueueDeclare(
@@ -51,11 +52,19 @@ namespace ConsoleAppExample
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
-            channel.QueueBind(_SecondQueueName, _ExchangeName, "2");
+            channel.QueueBind(_SecondQueueName, _ExchangeName, "*.*.cupboard");
+
+            Console.WriteLine("Creating Server 3 Queue");
+            channel.QueueDeclare(
+                queue: _ThirdQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+            channel.QueueBind(_ThirdQueueName, _ExchangeName, "*.medium.*");
+            channel.QueueBind(_ThirdQueueName, _ExchangeName, "corporate.#");
 
             Console.WriteLine("Setup complete");
-        }    
+        }
     }
 }
-
-

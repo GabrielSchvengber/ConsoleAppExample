@@ -13,7 +13,7 @@ namespace Server
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample4.Queue1";
+        private const string _QueueName = "Module2.Sample5.Queue1";
         private const bool _IsDurable = true;
         
         private const string _VirtualHost = "";
@@ -84,6 +84,7 @@ namespace Server
                 return;
 
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
+
             Console.WriteLine("Message Recieved - {0}", message);
 
             _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
