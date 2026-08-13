@@ -29,17 +29,15 @@
         private void InitializeComponent()
         {
             buttonSend = new Button();
+            comboBoxMaterial = new ComboBox();
             comboBoxCostumerType = new ComboBox();
-            comboBoxOrderSize = new ComboBox();
-            comboBoxProduct = new ComboBox();
-            labelCustomerType = new Label();
-            labelOrderSize = new Label();
-            labelProduct = new Label();
+            labelMaterial = new Label();
+            labelCostumerType = new Label();
             SuspendLayout();
             // 
             // buttonSend
             // 
-            buttonSend.Location = new Point(369, 201);
+            buttonSend.Location = new Point(369, 147);
             buttonSend.Name = "buttonSend";
             buttonSend.Size = new Size(90, 31);
             buttonSend.TabIndex = 3;
@@ -47,78 +45,56 @@
             buttonSend.UseVisualStyleBackColor = true;
             buttonSend.Click += buttonSend_Click;
             // 
+            // comboBoxMaterial
+            // 
+            comboBoxMaterial.FormattingEnabled = true;            
+            comboBoxMaterial.Location = new Point(171, 54);
+            comboBoxMaterial.Name = "comboBoxMaterial";
+            comboBoxMaterial.Items.AddRange(new object[] {
+            "wood",
+            "metal"});
+            comboBoxMaterial.Size = new Size(288, 23);
+            comboBoxMaterial.TabIndex = 4;
+            // 
             // comboBoxCostumerType
             // 
             comboBoxCostumerType.FormattingEnabled = true;
-            comboBoxCostumerType.Location = new Point(171, 54);
+            comboBoxCostumerType.Items.AddRange(new object[] { "high", "medium", "low" });
+            comboBoxCostumerType.Location = new Point(171, 99);
             comboBoxCostumerType.Name = "comboBoxCostumerType";
             comboBoxCostumerType.Items.AddRange(new object[] {
-            "corporate",
-            "personal"});
+            "b2b",
+            "b2c"});
             comboBoxCostumerType.Size = new Size(288, 23);
-            comboBoxCostumerType.TabIndex = 4;
+            comboBoxCostumerType.TabIndex = 5;
             // 
-            // comboBoxOrderSize
+            // labelMaterial
             // 
-            comboBoxOrderSize.FormattingEnabled = true;
-            comboBoxOrderSize.Location = new Point(171, 99);
-            comboBoxOrderSize.Name = "comboBoxOrderSize";
-            comboBoxOrderSize.Items.AddRange(new object[] {
-            "high",
-            "medium",
-            "low"});
-            comboBoxOrderSize.Size = new Size(288, 23);
-            comboBoxOrderSize.TabIndex = 5;
+            labelMaterial.AutoSize = true;
+            labelMaterial.Location = new Point(56, 57);
+            labelMaterial.Name = "labelMaterial";
+            labelMaterial.Size = new Size(53, 15);
+            labelMaterial.TabIndex = 7;
+            labelMaterial.Text = "Material:";
             // 
-            // comboBoxProduct
+            // labelCostumerType
             // 
-            comboBoxProduct.FormattingEnabled = true;
-            comboBoxProduct.Location = new Point(171, 141);
-            comboBoxProduct.Name = "comboBoxProduct";
-            comboBoxProduct.Items.AddRange(new object[] {
-            "table",
-            "cupboard"});
-            comboBoxProduct.Size = new Size(288, 23);
-            comboBoxProduct.TabIndex = 6;
-            // 
-            // labelCustomerType
-            // 
-            labelCustomerType.AutoSize = true;
-            labelCustomerType.Location = new Point(56, 57);
-            labelCustomerType.Name = "labelCustomerType";
-            labelCustomerType.Size = new Size(90, 15);
-            labelCustomerType.TabIndex = 7;
-            labelCustomerType.Text = "Customer Type:";
-            // 
-            // labelOrderSize
-            // 
-            labelOrderSize.AutoSize = true;
-            labelOrderSize.Location = new Point(56, 102);
-            labelOrderSize.Name = "labelOrderSize";
-            labelOrderSize.Size = new Size(63, 15);
-            labelOrderSize.TabIndex = 8;
-            labelOrderSize.Text = "Order Size:";
-            // 
-            // labelProduct
-            // 
-            labelProduct.AutoSize = true;
-            labelProduct.Location = new Point(56, 144);
-            labelProduct.Name = "labelProduct";
-            labelProduct.Size = new Size(52, 15);
-            labelProduct.TabIndex = 9;
-            labelProduct.Text = "Product:";
+            labelCostumerType.AutoSize = true;
+            labelCostumerType.Location = new Point(56, 102);
+            labelCostumerType.Name = "labelCostumerType";
+            labelCostumerType.Size = new Size(90, 15);
+            labelCostumerType.TabIndex = 8;
+            labelCostumerType.Text = "Costumer Type:";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(542, 267);
-            Controls.Add(labelProduct);
-            Controls.Add(labelOrderSize);
-            Controls.Add(labelCustomerType);
-            Controls.Add(comboBoxProduct);
-            Controls.Add(comboBoxOrderSize);
+            ClientSize = new Size(542, 203);
+            Controls.Add(labelCostumerType);
+            Controls.Add(labelMaterial);
             Controls.Add(comboBoxCostumerType);
+            Controls.Add(comboBoxMaterial);
             Controls.Add(buttonSend);
             Name = "Form1";
             Text = "Form1";
@@ -129,11 +105,9 @@
         #endregion
 
         private Button buttonSend;
+        private ComboBox comboBoxMaterial;
         private ComboBox comboBoxCostumerType;
-        private ComboBox comboBoxOrderSize;
-        private ComboBox comboBoxProduct;
-        private Label labelCustomerType;
-        private Label labelOrderSize;
-        private Label labelProduct;
+        private Label labelMaterial;
+        private Label labelCostumerType;
     }
 }

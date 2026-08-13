@@ -2,27 +2,29 @@ namespace WinClient
 {
     public partial class Form1 : Form
     {
+        private const string _FirstHeader = "material";
+        private const string _SecondHeader = "customertype";
+
+        private int messageCount;
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        private int messageCount = 0;
-
         private void buttonSend_Click(object sender, EventArgs e)
-        {   
-            var topics = new List<string>();
+        {
+            var headers = new Dictionary<string, string>();
             var messageSender = new RabbitSender();
 
-            topics.Add(GetComboItem(this.comboBoxCostumerType));
-            topics.Add(GetComboItem(this.comboBoxOrderSize));
-            topics.Add(GetComboItem(this.comboBoxProduct));
+            headers.Add(_FirstHeader, GetComboItem(comboBoxMaterial));
+            headers.Add(_SecondHeader, GetComboItem(comboBoxCostumerType));
 
             var message = string.Format("Message: {0}", messageCount);
 
-            var routingkey = messageSender.Send(message, topics);
+            messageSender.Send(message, headers);
 
-            MessageBox.Show(string.Format("Sending Message - {0}, Routing Key - {1}", message, routingkey), "Message sent");
+            MessageBox.Show(string.Format("Sending Message - {0}", message), "Message sent");
 
             messageCount++;
         }

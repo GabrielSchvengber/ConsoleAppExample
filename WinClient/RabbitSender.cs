@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using System.Collections.Specialized;
 using System.Text;
 
 namespace WinClient
@@ -9,7 +10,7 @@ namespace WinClient
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _ExchangeName = "Module2.Sample5.Exchange";
+        private const string _ExchangeName = "Module2.Sample6.Exchange";
         private const bool _IsDurable = true;
         
         private const string _VirtualHost = "";
@@ -59,22 +60,21 @@ namespace WinClient
             _model = _connection.CreateModel();
         }
 
-        public string Send(string message, List<string> topics)
+        public void Send(string message, Dictionary<string, string> headers)
         {            
             var properties = _model.CreateBasicProperties();
-            properties.Persistent = true;
-            
+            properties.Persistent = true;            
+            properties.Headers = new Dictionary<string, object>();
+
+            foreach (var header in headers)
+            {
+                Console.WriteLine("Header - Key: {0}, Value: {1}", header.Key, header.Value);
+                properties.Headers.Add(header.Key, header.Value);
+            }
+          
             byte[] messageBuffer = Encoding.Default.GetBytes(message);
             
-            var routingKey = topics.Aggregate(string.Empty, (current, key) => current + (key.ToLower() + "."));
-            if (routingKey.Length > 1)
-                routingKey = routingKey.Remove(routingKey.Length - 1, 1);
-
-            Console.WriteLine("Routing key from topics: {0}", routingKey);
-            
-            _model.BasicPublish(_ExchangeName, routingKey, properties, messageBuffer);
-
-            return routingKey;
+            _model.BasicPublish(_ExchangeName, "", properties, messageBuffer);
         }
 
         /// <summary>

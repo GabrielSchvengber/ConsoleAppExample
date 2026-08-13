@@ -13,7 +13,7 @@ namespace Server2
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample5.Queue2";
+        private const string _QueueName = "Module2.Sample6.Queue2";
         private const bool _IsDurable = true;
 
         private const string _VirtualHost = "";
@@ -86,6 +86,15 @@ namespace Server2
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
 
             Console.WriteLine("Message Recieved - {0}", message);
+
+            foreach (var headerKey in deliveryArgs.BasicProperties.Headers.Keys)
+            {
+                var headerValue = deliveryArgs.BasicProperties.Headers[headerKey];
+                var val = Encoding.Default.GetString((byte[])headerValue);
+                Console.WriteLine("Header - Key: {0}, Value: {1}", headerKey, val);
+            }
+
+            Console.WriteLine();
 
             _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
         }

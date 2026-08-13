@@ -2,7 +2,7 @@
 using RabbitMQ.Client.Events;
 using System.Text;
 
-namespace Server
+namespace Server4
 {
     /// <summary>
     /// Class to encapsulate recieving messages from RabbitMQ
@@ -13,9 +13,9 @@ namespace Server
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample6.Queue1";
+        private const string _QueueName = "Module2.Sample6.Queue4";
         private const bool _IsDurable = true;
-        
+
         private const string _VirtualHost = "";
         private int _Port = 0;
 
@@ -26,7 +26,7 @@ namespace Server
         private ConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _model;
-        private EventingBasicConsumer _consumer;       
+        private EventingBasicConsumer _consumer;
 
         /// <summary>
         /// Ctor with a key to lookup the configuration
@@ -86,7 +86,7 @@ namespace Server
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
 
             Console.WriteLine("Message Recieved - {0}", message);
-            
+
             foreach (var headerKey in deliveryArgs.BasicProperties.Headers.Keys)
             {
                 var headerValue = deliveryArgs.BasicProperties.Headers[headerKey];
