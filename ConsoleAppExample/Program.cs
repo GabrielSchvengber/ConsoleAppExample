@@ -8,12 +8,11 @@ namespace ConsoleAppExample
         public const string _UserName = "guest";
         public const string _Password = "guest";
 
-        public const string _FirstQueueName = "Module2.Sample6.Queue1";
-        public const string _SecondQueueName = "Module2.Sample6.Queue2";
-        public const string _ThirdQueueName = "Module2.Sample6.Queue3";
-        public const string _FourthQueueName = "Module2.Sample6.Queue4";
+        public const string _FirstQueueName = "Module2.Sample8.Queue1";
+        public const string _SecondQueueName = "Module2.Sample8.Queue2";
+        public const string _ThirdQueueName = "Module2.Sample8.Queue3";
 
-        public const string _ExchangeName = "Module2.Sample6.Exchange";
+        public const string _ExchangeName = "Module2.Sample8.Exchange";
 
         static void Main(string[] args)
         {
@@ -33,11 +32,12 @@ namespace ConsoleAppExample
             var channel = connection.CreateModel();
 
             Console.WriteLine("Creating Exchange");
+
             channel.ExchangeDeclare(
                 exchange: _ExchangeName,
-                // Headers, it's use to route messages based on attributes (headers).
-                type: ExchangeType.Headers,
-                durable: true);
+                // Topic, It1s used to route messages based on a pattern matching between the routing key and the binding key.
+                type: ExchangeType.Topic,
+                durable: false);
 
             Console.WriteLine("Creating Server 1 Queue");
 
@@ -48,13 +48,8 @@ namespace ConsoleAppExample
                 autoDelete: false,
                 arguments: null);
 
-            var header1 = new Dictionary<string, object>
-            {
-                { "material", "wood" },
-                { "customertype", "b2b" }
-            };
-
-            channel.QueueBind(_FirstQueueName, _ExchangeName, "", header1);
+            channel.QueueBind(_FirstQueueName, _ExchangeName, "1");
+            channel.QueueBind(_FirstQueueName, _ExchangeName, "4");
 
             Console.WriteLine("Creating Server 2 Queue");
 
@@ -65,13 +60,9 @@ namespace ConsoleAppExample
                 autoDelete: false,
                 arguments: null);
 
-            var header2 = new Dictionary<string, object>
-            {
-                { "material", "metal" },
-                { "customertype", "b2c" }
-            };
-
-            channel.QueueBind(_SecondQueueName, _ExchangeName, "", header2);
+            channel.QueueBind(_SecondQueueName, _ExchangeName, "2");
+            channel.QueueBind(_SecondQueueName, _ExchangeName, "4");
+            channel.QueueBind(_SecondQueueName, _ExchangeName, "6");
 
             Console.WriteLine("Creating Server 3 Queue");
 
@@ -82,32 +73,9 @@ namespace ConsoleAppExample
                 autoDelete: false,
                 arguments: null);
 
-            var header3 = new Dictionary<string, object>
-            {
-                { "x-match", "any" },
-                { "material", "wood" },
-                { "customertype", "b2b" }
-            };
-
-            channel.QueueBind(_ThirdQueueName, _ExchangeName, "", header3);
-
-            Console.WriteLine("Creating Server 4 Queue");
-
-            channel.QueueDeclare(
-                queue: _FourthQueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-
-            var header4 = new Dictionary<string, object>
-            {
-                { "x-match", "any" },
-                { "material", "metal" },
-                { "customertype", "b2c" }
-            };
-
-            channel.QueueBind(_FourthQueueName, _ExchangeName, "", header4);
+            channel.QueueBind(_ThirdQueueName, _ExchangeName, "3");
+            channel.QueueBind(_ThirdQueueName, _ExchangeName, "4");
+            channel.QueueBind(_ThirdQueueName, _ExchangeName, "6");
 
             Console.WriteLine("Setup complete");
         }

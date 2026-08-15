@@ -4,16 +4,13 @@ using System.Text;
 
 namespace Server2
 {
-    /// <summary>
-    /// Class to encapsulate recieving messages from RabbitMQ
-    /// </summary>
     public class RabbitConsumer : IDisposable
     {
         private const string _HostName = "localhost";
         private const string _UserName = "guest";
         private const string _Password = "guest";
 
-        private const string _QueueName = "Module2.Sample6.Queue2";
+        private const string _QueueName = "Module2.Sample8.Queue2";
         private const bool _IsDurable = true;
 
         private const string _VirtualHost = "";
@@ -28,9 +25,6 @@ namespace Server2
         private IModel _model;
         private EventingBasicConsumer _consumer;
 
-        /// <summary>
-        /// Ctor with a key to lookup the configuration
-        /// </summary>
         public RabbitConsumer()
         {
             DisplaySettings();
@@ -51,9 +45,6 @@ namespace Server2
             _model.BasicQos(0, 1, false);
         }
 
-        /// <summary>
-        /// Displays the rabbit settings
-        /// </summary>
         private void DisplaySettings()
         {
             Console.WriteLine("Host: {0}", _HostName);
@@ -65,9 +56,6 @@ namespace Server2
             Console.WriteLine("Is Durable: {0}", _IsDurable);
         }
 
-        /// <summary>
-        /// Starts receiving a message from a queue
-        /// </summary>
         public void Start()
         {
             Enabled = true;
@@ -84,24 +72,36 @@ namespace Server2
                 return;
 
             var message = Encoding.Default.GetString(deliveryArgs.Body.ToArray());
+            Console.WriteLine("Received message: {0}", message);
 
-            Console.WriteLine("Message Recieved - {0}", message);
+            var response = ProcessMessage(message);
 
-            foreach (var headerKey in deliveryArgs.BasicProperties.Headers.Keys)
-            {
-                var headerValue = deliveryArgs.BasicProperties.Headers[headerKey];
-                var val = Encoding.Default.GetString((byte[])headerValue);
-                Console.WriteLine("Header - Key: {0}, Value: {1}", headerKey, val);
-            }
+            SendReply(deliveryArgs, response);
 
-            Console.WriteLine();
+            Console.WriteLine("Finished Processing Message - {0}", message);
 
             _model.BasicAck(deliveryArgs.DeliveryTag, multiple: false);
         }
 
-        /// <summary>
-        /// Dispose
-        /// </summary>
+        private string ProcessMessage(string message)
+        {
+            return string.Format("Processed message - {0} : Response is good", message);
+        }
+
+        private void SendReply(BasicDeliverEventArgs deliveryArgs, string response)
+        {
+            var replyTo = deliveryArgs.BasicProperties?.ReplyTo;
+            if (string.IsNullOrEmpty(replyTo))
+                return;
+
+            var replyProperties = _model.CreateBasicProperties();
+            replyProperties.CorrelationId = deliveryArgs.BasicProperties?.CorrelationId;
+
+            byte[] messageBuffer = Encoding.Default.GetBytes(response);
+
+            _model.BasicPublish(exchange: "", routingKey: replyTo, basicProperties: replyProperties, body: messageBuffer);
+        }
+
         public void Dispose()
         {
             if (_consumer != null)
